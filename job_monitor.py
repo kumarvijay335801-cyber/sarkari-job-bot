@@ -1,9 +1,12 @@
 import requests
 import xml.etree.ElementTree as ET
+import json
+import hashlib
 import re
 from html import unescape
 
 FEED_URL = "https://www.sarkariexam.com/feed/"
+SEEN_FILE = "seen_jobs.json"
 
 headers = {
     "User-Agent": "SarkariJobBot/1.0"
@@ -21,8 +24,34 @@ def clean_text(text):
     return text.strip()
 
 
+def load_seen():
+    try:
+        with open(SEEN_FILE, "r", encoding="utf-8") as file:
+            return set(json.load(file))
+    except FileNotFoundError:
+        return set()
+
+
+def save_seen(seen):
+    with open(SEEN_FILE, "w", encoding="utf-8") as file:
+        json.dump(
+            sorted(seen),
+            file,
+            ensure_ascii=False,
+            indent=2
+        )
+
+
+def make_id(title, link):
+    value = (link or title).strip()
+
+    return hashlib.sha256(
+        value.encode("utf-8")
+    ).hexdigest()
+
+
 print("======================================")
-print("SARKARI EXAM RSS TEST")
+print("SARKARI EXAM JOB MONITOR")
 print("======================================")
 
 response = requests.get(
@@ -32,8 +61,6 @@ response = requests.get(
 )
 
 print("STATUS:", response.status_code)
-print("CONTENT TYPE:", response.headers.get("content-type"))
-print("FEED SIZE:", len(response.content))
 
 response.raise_for_status()
 
@@ -48,12 +75,17 @@ items = channel.findall("item")
 
 print("TOTAL RSS ITEMS:", len(items))
 
-print("\n========== JOB LIST ==========\n")
+seen = load_seen()
 
-for i, item in enumerate(items[:10], start=1):
+print("ALREADY SEEN:", len(seen))
+
+new_jobs = []
+
+for item in items:
 
     title_element = item.find("title")
     link_element = item.find("link")
+    date_element = item.find("pubDate")
 
     title = clean_text(
         title_element.text
@@ -67,10 +99,50 @@ for i, item in enumerate(items[:10], start=1):
         else ""
     )
 
-    print(f"{i}. {title}")
-    print(f"   {link}")
-    print()
+    date = (
+        date_element.text.strip()
+        if date_element is not None and date_element.text
+        else ""
+    )
 
-print("======================================")
-print("✅ RSS TEST COMPLETED")
-print("======================================")
+    if not title:
+        continue
+
+    job_id = make_id(title, link)
+
+    if job_id in seen:
+        continue
+
+    new_jobs.append({
+        "id": job_id,
+        "title": title,
+        "link": link,
+        "date": date
+    })
+
+    seen.add(job_id)
+
+
+print("NEW JOBS:", len(new_jobs))
+
+if new_jobs:
+
+    print("\n========== NEW JOBS ==========\n")
+
+    for number, job in enumerate(new_jobs, start=1):
+
+        print(f"JOB {number}")
+        print("TITLE:", job["title"])
+        print("DATE:", job["date"])
+        print("LINK:", job["link"])
+        print("--------------------------------")
+
+else:
+
+    print("ℹ️ कोई नई job नहीं मिली।")
+
+
+save_seen(seen)
+
+print("\nSEEN JOBS SAVED:", len(seen))
+print("✅ MONITOR COMPLETED")
