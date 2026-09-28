@@ -1,15 +1,22 @@
-name: Sarkari Job RSS Test
+name: Sarkari Job Monitor
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: write
 
 jobs:
-  test:
+  monitor:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -20,6 +27,25 @@ jobs:
         run: |
           pip install requests
 
-      - name: Run RSS Test
+      - name: Run job monitor
         run: |
           python job_monitor.py
+
+      - name: Save seen jobs
+        run: |
+          git config user.name "Sarkari Job Bot"
+          git config user.email "actions@github.com"
+
+          git add seen_jobs.json
+
+          if git diff --cached --quiet; then
+            echo "No changes to save"
+            exit 0
+          fi
+
+          git commit -m "Update seen jobs"
+
+          git fetch origin main
+          git rebase origin/main
+
+          git push origin HEAD:main
