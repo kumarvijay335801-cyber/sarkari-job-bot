@@ -7,6 +7,7 @@ from html import unescape
 
 FEED_URL = "https://www.sarkariexam.com/feed/"
 SEEN_FILE = "seen_jobs.json"
+MESSAGE_FILE = "latest_jobs.txt"
 
 headers = {
     "User-Agent": "SarkariJobBot/1.0"
@@ -125,24 +126,66 @@ for item in items:
 
 print("NEW JOBS:", len(new_jobs))
 
-if new_jobs:
 
-    print("\n========== NEW JOBS ==========\n")
+# --------------------------------------
+# CREATE HINDI MESSAGES
+# --------------------------------------
 
-    for number, job in enumerate(new_jobs, start=1):
+messages = []
 
-        print(f"JOB {number}")
-        print("TITLE:", job["title"])
-        print("DATE:", job["date"])
-        print("LINK:", job["link"])
-        print("--------------------------------")
+for job in new_jobs:
+
+    message = f"""📢 नई सरकारी नौकरी अपडेट
+
+🔹 पोस्ट: {job['title']}
+
+📅 तारीख: {job['date']}
+
+🔗 पूरी जानकारी:
+{job['link']}
+
+📌 Sarkari Job Update
+"""
+
+    messages.append(message)
+
+
+if messages:
+
+    with open(
+        MESSAGE_FILE,
+        "w",
+        encoding="utf-8"
+    ) as file:
+
+        file.write(
+            "\n\n━━━━━━━━━━━━━━━━━━━━\n\n".join(messages)
+        )
+
+    print("\n========== HINDI MESSAGE ==========\n")
+
+    print(
+        "\n\n━━━━━━━━━━━━━━━━━━━━\n\n".join(messages)
+    )
+
+    print("\n======================================")
+    print("✅ Hindi messages created")
+    print("======================================")
 
 else:
+
+    # Empty file बनाना ताकि workflow में file हमेशा मौजूद रहे
+    with open(
+        MESSAGE_FILE,
+        "w",
+        encoding="utf-8"
+    ) as file:
+        file.write("")
 
     print("ℹ️ कोई नई job नहीं मिली।")
 
 
 save_seen(seen)
 
-print("\nSEEN JOBS SAVED:", len(seen))
+print("SEEN JOBS SAVED:", len(seen))
 print("✅ MONITOR COMPLETED")
