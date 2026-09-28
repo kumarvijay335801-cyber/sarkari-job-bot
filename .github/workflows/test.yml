@@ -1,4 +1,4 @@
-   name: Sarkari Job Monitor
+name: Sarkari Job Monitor
 
 on:
   workflow_dispatch:
@@ -45,6 +45,10 @@ jobs:
 
           git commit -m "Update job monitor data"
 
+          git fetch origin main
+          git rebase origin/main
+
+          git push origin HEAD:main
           git fetch origin main
           git rebase origin/main
 
