@@ -1,49 +1,16 @@
-name: Sarkari Job Monitor
-
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: "*/15 * * * *"
-
-permissions:
-  contents: write
-
-jobs:
-  monitor:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install requests
-        run: |
-          pip install requests
-
-      - name: Run job monitor
-        run: |
-          python job_monitor.py
-
-      - name: Save seen jobs
+      - name: Save monitor files
         run: |
           git config user.name "Sarkari Job Bot"
           git config user.email "actions@github.com"
 
-          git add seen_jobs.json
+          git add seen_jobs.json latest_jobs.txt
 
           if git diff --cached --quiet; then
             echo "No changes to save"
             exit 0
           fi
 
-          git commit -m "Update seen jobs"
+          git commit -m "Update job monitor data"
 
           git fetch origin main
           git rebase origin/main
