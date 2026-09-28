@@ -252,3 +252,4 @@ save_seen(seen)
 
 print("SEEN JOBS SAVED:", len(seen))
 print("✅ MONITOR COMPLETED")
+send_whatsapp("✅ Sarkari Job Bot WhatsApp test successful!")
