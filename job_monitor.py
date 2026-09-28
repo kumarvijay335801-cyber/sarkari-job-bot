@@ -220,36 +220,45 @@ if messages:
         "\n\n━━━━━━━━━━━━━━━━━━━━\n\n".join(messages)
     )
 
-    # Send new jobs to WhatsApp
-   for message in messages:
-
+    # Send new jobs to multiple WhatsApp numbers
     numbers = [
         number.strip()
         for number in WHATSAPP_TO_NUMBERS.split(",")
         if number.strip()
     ]
 
-    for number in numbers:
+    for message in messages:
 
-        print(f"📤 Sending WhatsApp message to {number}...")
+        for number in numbers:
 
-        old_number = WHATSAPP_TO_NUMBER
-        WHATSAPP_TO_NUMBER = number
+            print(f"📤 Sending WhatsApp message to {number}...")
 
-        success = send_whatsapp(message)
+            old_number = WHATSAPP_TO_NUMBER
+            WHATSAPP_TO_NUMBER = number
 
-        WHATSAPP_TO_NUMBER = old_number
+            success = send_whatsapp(message)
 
-        if success:
-            print(f"✅ WhatsApp message sent to {number}")
-        else:
-            print(f"❌ WhatsApp message failed for {number}")
+            WHATSAPP_TO_NUMBER = old_number
+
+            if success:
+                print(f"✅ WhatsApp message sent to {number}")
+            else:
+                print(f"❌ WhatsApp message failed for {number}")
 
     print("\n======================================")
     print("✅ Hindi messages created")
     print("======================================")
 
 else:
+
+    with open(
+        MESSAGE_FILE,
+        "w",
+        encoding="utf-8"
+    ) as file:
+        file.write("")
+
+    print("ℹ️ कोई नई job नहीं मिली।")
 
     with open(
         MESSAGE_FILE,
