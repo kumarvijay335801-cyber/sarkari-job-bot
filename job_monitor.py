@@ -265,8 +265,6 @@ else:
     ) as file:
         file.write("")
 
-    print("ℹ️ कोई नई job नहीं मिली।")
-
 
 save_seen(seen)
 
