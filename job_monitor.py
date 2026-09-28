@@ -3,11 +3,17 @@ import xml.etree.ElementTree as ET
 import json
 import hashlib
 import re
+import os
 from html import unescape
 
 FEED_URL = "https://www.sarkariexam.com/feed/"
 SEEN_FILE = "seen_jobs.json"
 MESSAGE_FILE = "latest_jobs.txt"
+
+# WhatsApp settings
+WHATSAPP_ACCESS_TOKEN = os.environ.get("WHATSAPP_ACCESS_TOKEN")
+WHATSAPP_PHONE_NUMBER_ID = os.environ.get("WHATSAPP_PHONE_NUMBER_ID")
+WHATSAPP_TO_NUMBER = os.environ.get("WHATSAPP_TO_NUMBER")
 
 headers = {
     "User-Agent": "SarkariJobBot/1.0"
@@ -49,6 +55,52 @@ def make_id(title, link):
     return hashlib.sha256(
         value.encode("utf-8")
     ).hexdigest()
+
+
+def send_whatsapp(message):
+
+    if not WHATSAPP_ACCESS_TOKEN:
+        print("❌ WHATSAPP_ACCESS_TOKEN missing")
+        return False
+
+    if not WHATSAPP_PHONE_NUMBER_ID:
+        print("❌ WHATSAPP_PHONE_NUMBER_ID missing")
+        return False
+
+    if not WHATSAPP_TO_NUMBER:
+        print("❌ WHATSAPP_TO_NUMBER missing")
+        return False
+
+    url = (
+        f"https://graph.facebook.com/v23.0/"
+        f"{WHATSAPP_PHONE_NUMBER_ID}/messages"
+    )
+
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": WHATSAPP_TO_NUMBER,
+        "type": "text",
+        "text": {
+            "body": message
+        }
+    }
+
+    api_headers = {
+        "Authorization": f"Bearer {WHATSAPP_ACCESS_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(
+        url,
+        headers=api_headers,
+        json=payload,
+        timeout=30
+    )
+
+    print("WHATSAPP STATUS:", response.status_code)
+    print("WHATSAPP RESPONSE:", response.text)
+
+    return response.ok
 
 
 print("======================================")
@@ -168,13 +220,24 @@ if messages:
         "\n\n━━━━━━━━━━━━━━━━━━━━\n\n".join(messages)
     )
 
+    # Send new jobs to WhatsApp
+    for message in messages:
+
+        print("📤 Sending WhatsApp message...")
+
+        success = send_whatsapp(message)
+
+        if success:
+            print("✅ WhatsApp message sent")
+        else:
+            print("❌ WhatsApp message failed")
+
     print("\n======================================")
     print("✅ Hindi messages created")
     print("======================================")
 
 else:
 
-    # Empty file बनाना ताकि workflow में file हमेशा मौजूद रहे
     with open(
         MESSAGE_FILE,
         "w",
