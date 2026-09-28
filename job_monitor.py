@@ -221,16 +221,29 @@ if messages:
     )
 
     # Send new jobs to WhatsApp
-    for message in messages:
+   for message in messages:
 
-        print("📤 Sending WhatsApp message...")
+    numbers = [
+        number.strip()
+        for number in WHATSAPP_TO_NUMBERS.split(",")
+        if number.strip()
+    ]
+
+    for number in numbers:
+
+        print(f"📤 Sending WhatsApp message to {number}...")
+
+        old_number = WHATSAPP_TO_NUMBER
+        WHATSAPP_TO_NUMBER = number
 
         success = send_whatsapp(message)
 
+        WHATSAPP_TO_NUMBER = old_number
+
         if success:
-            print("✅ WhatsApp message sent")
+            print(f"✅ WhatsApp message sent to {number}")
         else:
-            print("❌ WhatsApp message failed")
+            print(f"❌ WhatsApp message failed for {number}")
 
     print("\n======================================")
     print("✅ Hindi messages created")
