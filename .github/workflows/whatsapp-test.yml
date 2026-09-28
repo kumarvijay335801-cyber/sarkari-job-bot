@@ -8,14 +8,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Send WhatsApp test message
+      - name: Send WhatsApp test messages
         env:
           WHATSAPP_ACCESS_TOKEN: ${{ secrets.WHATSAPP_ACCESS_TOKEN }}
           WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
-          WHATSAPP_TO_NUMBER: ${{ secrets.WHATSAPP_TO_NUMBER }}
+          WHATSAPP_TO_NUMBERS: ${{ secrets.WHATSAPP_TO_NUMBERS }}
         run: |
-          curl -X POST \
-            "https://graph.facebook.com/v23.0/${WHATSAPP_PHONE_NUMBER_ID}/messages" \
-            -H "Authorization: Bearer ${WHATSAPP_ACCESS_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d "{\"messaging_product\":\"whatsapp\",\"to\":\"${WHATSAPP_TO_NUMBER}\",\"type\":\"text\",\"text\":{\"body\":\"✅ Sarkari Job Bot GitHub test successful!\"}}"
+          IFS=',' read -ra NUMBERS <<< "$WHATSAPP_TO_NUMBERS"
+
+          for NUMBER in "${NUMBERS[@]}"; do
+            echo "Sending to $NUMBER"
+
+            curl -X POST \
+              "https://graph.facebook.com/v23.0/${WHATSAPP_PHONE_NUMBER_ID}/messages" \
+              -H "Authorization: Bearer ${WHATSAPP_ACCESS_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "{\"messaging_product\":\"whatsapp\",\"to\":\"${NUMBER}\",\"type\":\"text\",\"text\":{\"body\":\"✅ Sarkari Job Bot multi-number test successful!\"}}"
+
+            echo
+          done
