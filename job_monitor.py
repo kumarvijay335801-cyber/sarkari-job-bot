@@ -199,7 +199,7 @@ for job in new_jobs:
 
 📌 Sarkari Job Update
 """
-messages.append(message)
+
 if messages:
 
     with open(
