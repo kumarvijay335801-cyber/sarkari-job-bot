@@ -14,7 +14,7 @@ MESSAGE_FILE = "latest_jobs.txt"
 WHATSAPP_ACCESS_TOKEN = os.environ.get("WHATSAPP_ACCESS_TOKEN")
 WHATSAPP_PHONE_NUMBER_ID = os.environ.get("WHATSAPP_PHONE_NUMBER_ID")
 WHATSAPP_TO_NUMBER = os.environ.get("WHATSAPP_TO_NUMBER")
-
+WHATSAPP_TO_NUMBERS = os.environ.get("WHATSAPP_TO_NUMBERS", "")
 headers = {
     "User-Agent": "SarkariJobBot/1.0"
 }
