@@ -201,7 +201,17 @@ for job in new_jobs:
 """
 
     messages.append(message)
+messages.append("""📢 नई सरकारी नौकरी अपडेट
 
+🔹 पोस्ट: SSC Government Job Test
+
+📅 तारीख: आज
+
+🔗 पूरी जानकारी:
+https://www.sarkariexam.com/
+
+📌 Sarkari Job Update
+""")
 
 if messages:
 
